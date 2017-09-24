@@ -1,0 +1,22 @@
+%Propiedades
+
+
+%Relaciones
+
+%Clases
+%lista_clases([object class object, clase1 class object, clase2 class clase1]).
+:-op(15,xfx,class).
+%busca_clase(Clase,[H|T]):-!.
+busca_clase(Clase,[H|T],Padre):-
+ class(Padre,Clase) = H,!;busca_clase(Clase,T,Padre).
+push([],E,E):-!.
+push([A|B],E,[A|D]):-
+	push(B,E,D).
+%consulta_extension(objeto,[object class object, clase1 class object, clase2 class clase1],L).
+%consulta_extension(Clase,[H|T],L):-
+%	busca_clase(Clase,[H|T],Padre),padre \= Clase, push([Padre],S,L),consulta_extension(Padre,[H|T],S).
+consulta_extension(Clase,[H|T],L):-
+	%busca_clase(Clase,[H|T],Padre),Padre \= Clase, consulta_extension(Padre,[H|T],L), push([Padre],S,L).
+	busca_clase(Clase,[H|T],Padre),Padre \= Clase,consulta_extension(Padre,[H|T],L),write('padre:'),tab(1),write(Clase).
+consulta_extension(Clase,[H|T],L):-
+	write('Clase root:'),tab(1),write(Clase).

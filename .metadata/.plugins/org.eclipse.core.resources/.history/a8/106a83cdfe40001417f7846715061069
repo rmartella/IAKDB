@@ -1,0 +1,12 @@
+[
+	ClassList => [
+		class("Object","Object",[]),
+		class("Class1","Object",[attr1=>value1]),
+		class("Class2","Object",[attr1=>value1,attr2=>value2]),
+		class("Class3","Class2",[attr1=>value5,attr3=>value4])
+	],
+	ObjectList => [
+		object([name=>"Object1",class=>"Class1",attributes=>[attr1=>value5,attr3=>value4]]),
+		object([name=>"Object2",class=>"Class2",attributes=>[attr1=>value5,attr3=>value4]])
+	]
+]

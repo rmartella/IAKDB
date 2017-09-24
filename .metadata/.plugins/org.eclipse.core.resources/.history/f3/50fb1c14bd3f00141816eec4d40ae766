@@ -1,0 +1,3 @@
+:-op(15,xfx,=>).
+class(name=>"Object",parent=>"Object",attributes=>[]).
+class(name=>"Class1",parent=>"Object",attributes=>[attr1=>value1]).

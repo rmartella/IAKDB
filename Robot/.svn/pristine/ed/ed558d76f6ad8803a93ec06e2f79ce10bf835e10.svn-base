@@ -1,0 +1,68 @@
+/*************************************************************************
+*
+* UNIVERSIDAD NACIONAL AÚTONOMA DE MÉXICO
+* IIMAS
+* INTELIGENCIA ARTIFICIAL
+* PROYECTO 2 Planeacion
+* 
+* MARTELL AVILA REYNALDO
+* AUGUSTO JULIO CESAR VEGA GUTIÉRREZ
+* PEDRO VEGA GALAVIZ
+*
+**************************************************************************
+*/
+
+
+:-consult("BaseConocimiento.pl").
+:-consult("Planning.pl").
+:-consult("Executing.pl").
+:-loadBD.
+
+%planning([refresco=>mesa1,agua=>mesa2,hamburguesa=>mesa2],robot,60,TiempoPlaneacion,Plan),write(Plan).
+planning([H|T],Agente,Tiempo,TiempoPlaneacion,Plan):-
+	get_time(TimeInicio),
+	estadoActual(Agente,[H|T],Tiempo,EI),
+	estadoObjetivo([H|T],EF),
+	obtenRecompenzaObjetivo([H|T],RecompenzaObjetivo),
+	%obtenProbabilidadObjetivo([H|T],ProbabilidadObjetivo),
+	Nodo = nodo([estado=>EI,probabilidad=>1,recompenza=>0,costo=>0,h1T=>Tiempo,h2T=>RecompenzaObjetivo]),
+	planeador(Nodo,EF,Plan),
+	get_time(TimeFin),
+	TiempoPlaneacion is Tiempo - (TimeFin - TimeInicio),!.
+	
+%ordenar([agua=>mesa1,refresco=>mesa2,hamburguesa=>mesa1],60,robot,Orden).
+%%%
+% 
+% Accion de ordenar 
+%
+%%%
+%ordenar(Metas,Tiempo,Agente,X):-
+ordenar(Metas,Tiempo,Agente):-
+	modifyValueRelation(metas=>_,Metas,Agente,_),
+	planning(Metas,Agente,Tiempo,TPlan,Plan),
+	modifyValueRelation(tiempoTotal=>_,TPlan,Agente,_),nl,
+	modifyValueRelation(acciones=>_,Plan,Agente,_),nl,
+	write("Plan:"),write(Plan),nl,nl,
+	write("Tiempo Restante:"),write(TPlan),nl,nl.
+	
+	
+%%%
+% 
+% Ejecucion del plan por el agente 
+%
+%%%
+%ejecutarPlanAgente(Agente):-
+ejecutarPlanAgente(Agente):-
+	object(Agente,"Agente",Atrs,_),
+	valor(acciones,Atrs,Acciones),
+	ejecutarPlan(Agente,Acciones),!.
+	
+%Predicados ejemplos
+%Metas = [agua=>mesa1,refresco=>mesa2,hamburguesa=>mesa1],Agente = robot,ordenar(Metas,60,Agente),ejecutarPlanAgente(Agente).
+
+
+
+
+
+
+

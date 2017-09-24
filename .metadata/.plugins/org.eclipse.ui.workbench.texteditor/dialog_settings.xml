@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item value="309" key="DIALOG_WIDTH"/>
+		<item value="0" key="DIALOG_Y_ORIGIN"/>
+		<item value="460" key="DIALOG_HEIGHT"/>
+		<item value="745" key="DIALOG_X_ORIGIN"/>
+		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item value="true" key="wrap"/>
+		<item value="false" key="isRegEx"/>
+		<item value="false" key="casesensitive"/>
+		<item value="false" key="incremental"/>
+		<item value="false" key="wholeword"/>
+		<item value="agarrar" key="selection"/>
+		<list key="findhistory">
+			<item value="agarrar"/>
+			<item value="sandw"/>
+			<item value="sand"/>
+			<item value="sanwi"/>
+			<item value="entregar"/>
+			<item value="brazosLibres"/>
+			<item value="RecompenzaH"/>
+			<item value="ProbabilidadH"/>
+		</list>
+		<list key="replacehistory">
+			<item value="Probabilidad"/>
+			<item value="&apos;"/>
+			<item value="validateDuplicateAdd"/>
+			<item value="findLinksObject"/>
+			<item value="findLinksClass"/>
+			<item value="addElement"/>
+		</list>
+	</section>
+</section>

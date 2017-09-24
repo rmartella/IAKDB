@@ -1,0 +1,312 @@
+﻿:-op(15,xfx,=>).
+
+elimina(_,[],[]):-!.
+elimina(X,[X],[]):-!.
+elimina(X,[X|B],S):-
+	elimina(X,B,S),!.
+elimina(X,[A|B],S):-
+	elimina(X,B,W),addElement([A],W,S).
+
+cuenta(_,[],0):-!.
+cuenta(A,[A|T],X):-
+	cuenta(A,T,X1),!,X is X1 + 1.	
+cuenta(A,[H|T],X):-
+	A\=H,
+	cuenta(A,T,X),!.
+	
+brazosLibres(X,Y):-object(X,"Agente",Atrs,_),valor(brazosLibres,Atrs,Y).
+
+%obtenEstadoAgente([en,robot,inicio],S).
+obtenEstadoAgente([H|T],Lista):-
+	[en,A,L] = [H|T],
+	object(A,"Agente",_,_) -> (
+		Lista = [en,A,L]; Lista = []
+	),!.
+	
+%iteradorEstadoAgente([[en, robot, inicio], [brazoLibre], [en, agua, estante1]],L).
+iteradorEstadoAgente([],[]):-!.
+iteradorEstadoAgente([H|_],L):-
+	obtenEstadoAgente(H,L),
+	length(L,Size),
+	Size > 0,!.
+iteradorEstadoAgente([_|T],L):-
+	iteradorEstadoAgente(T,L),!.
+
+%TIENE EN DURO clase alimento
+%obtenEstadoObjeto([en,agua,estante1],L).
+obtenEstadoObjeto([H|T],Lista):-
+	[en,_,_] \= [H|T],
+	Lista = [],!.
+obtenEstadoObjeto([H|T],Lista):-
+	[en,O,L] = [H|T],
+	object(O,"Alimento",_,_) -> (
+		Lista = [en,O,L]; Lista = []
+	),!.
+obtenEstadoObjeto([H|T],Lista):-
+	[en,_,_] = [H|T],
+	Lista = [],!.
+	
+%iteradorEstadoObjetos([[en, robot, inicio], [brazoLibre], [en, agua, estante1]],L).
+iteradorEstadoObjetos([],[]):-!.
+iteradorEstadoObjetos([H|T],L):-
+	iteradorEstadoObjetos(T,LR),
+	obtenEstadoObjeto(H,R),
+	length(R,Size),
+	(Size > 0 ->addElement([R],LR,UL);addElement([],LR,UL)
+	),L = UL,!.
+
+estadoDumy(L):-
+	%L = [[en,robot,inicio],[brazoLibre],[en,refresco,estante1],[en,agua,estante1]].
+	%L = [[en,robot,estante1],[brazoLibre],[en,refresco,estante1],[en,agua,estante2]].
+	%L = [[en,robot,estante1],[brazoLibre],[en,refresco,estante1],[en,agua,estante1],[buscado,refresco,robot]].
+	%L = [[en,robot,estante1],[en,refresco,estante1],[en,agua,estante1],[buscado,agua,robot],[buscado,refresco,robot]].
+	%L = [[en, robot, estante1], [brazoLibre], [en, agua, estante1], [agarrado, refresco, robot]].
+	%L = [[en, robot, estante1], [brazoLibre], [agarrado, refresco, robot],[agarrado, agua, robot]].
+	L = [[en, robot, mesa1], [en, refresco,mesa1],[en, agua,mesa2]].
+efectosDumy(EP,EN):-
+	%EP = [[en,robot,mesa1]],EN = [[en,robot,inicio]].
+	EP = [[buscado,agua,robot]],EN = [[]].
+accionDummy(L):-
+	%L = [mover,_,_,_].
+	%L = [buscar,_,_,_].
+	L = [agarrar,_,_,_].
+	%L = [colocar,_,_,_].
+
+%efectosDumy(EP,EN),estadoDumy(L),eliminaEfectosNegativos(EN,L,R).
+eliminaEfectosNegativos([],[R|S],L):-L = [R|S],!.
+eliminaEfectosNegativos([H|T],[R|S],L):-
+	eliminaEfectosNegativos(T,[R|S],RS),
+	elimina(H,RS,L),!.
+
+%efectosDumy(EP,EN),estadoDumy(L),calculaNuevoEstadoAccion(EP,EN,L,R).
+%getEfecto([mover,inicio,mesa1],EP,EN),estadoDumy(L),calculaNuevoEstadoAccion(EP,EN,L,R).
+%getEfecto([buscar,refresco,estante1,robot],EP,EN),estadoDumy(L),calculaNuevoEstadoAccion(EP,EN,L,R).
+%getEfecto([agarrar,refresco,estante1,robot],EP,EN),estadoDumy(L),write(EP),nl,write(EN),nl,write(L),nl,calculaNuevoEstadoAccion(EP,EN,L,R).
+%getEfecto([entregar,refresco,mesa1,robot],EP,EN),estadoDumy(L),write(EP),nl,write(EN),nl,write(L),nl,calculaNuevoEstadoAccion(EP,EN,L,R).
+calculaNuevoEstadoAccion([EPH|EPT],[ENH|ENT],[ESH|EST],L):-
+	eliminaEfectosNegativos([ENH|ENT],[ESH|EST],RE),
+	addElement(RE,[EPH|EPT],L).
+
+%accionDummy(L),L = [mover,robot,inicio,mesa1],getEfecto(L,EP,EN).
+getEfecto([H|T],EP,EN):-
+	[mover,X,Y,Z] = [H|T],
+	addElement([[en,X,Z]],[],EP),
+	addElement([[en,X,Y]],[],EN),!.
+%accionDummy(L),L = [buscar,refresco,estante1,robot],getEfecto(L,EP,EN).
+getEfecto([H|T],EP,EN):-
+	[buscar,O,_,X] = [H|T],
+	addElement([[buscado,O,X]],[],EP),
+	addElement([[]],[],EN),!.
+%accionDummy(L),L = [agarrar,refresco,estante1,robot],getEfecto(L,EP,EN).
+getEfecto([H|T],EP,EN):-
+	[agarrar,O,L,X] = [H|T],
+	addElement([[agarrado,O,X]],[],EP),
+	addElement([[en,O,L],[buscado,O,X]],[],EN),!.
+%accionDummy(L),L = [colocar,refresco,estante1,robot],getEfecto(L,EP,EN).
+getEfecto([H|T],EP,EN):-
+	[entregar,O,L,X] = [H|T],
+	addElement([[en,O,L]],[],EP),
+	addElement([[agarrado,O,X]],[],EN),!.
+%estadoDumy(L),iteradorEstadoObjetos(L,A),encuentraAccionBusqueda([en, refresco, estante1],L,E,R).
+%estadoDumy(L),iteradorEstadoObjetos(L,A),encuentraAccionBusqueda([en, agua, estante1],L,E,R).
+encuentraAccionBusqueda([H|T],[],E,[]):- E = [H|T],!.	
+encuentraAccionBusqueda([H|T],[R|S],E,A):-
+	[Metodo|_] = R,
+	(Metodo = buscado ->(
+			([en,O,_] = [H|T],
+			[buscado,O,X] = R)->(
+				addElement([buscado,O,X],[],A),
+				E = []
+			);
+			encuentraAccionBusqueda([H|T],S,E,A)	
+		);
+		encuentraAccionBusqueda([H|T],S,E,A)
+	),!.
+%estadoDumy(L),iteradorEstadoObjetos(L,A),encuentraAccionesBusqueda(A,L,E,R).
+encuentraAccionesBusqueda([],[_|_],[],[]):-!.
+encuentraAccionesBusqueda([H|T],[R|S],E,L):-
+	encuentraAccionesBusqueda(T,[R|S],RE1,RS),
+	encuentraAccionBusqueda(H,[R|S],RE,RA),
+	length(RE,SizeRE),
+	(SizeRE > 0 -> addElement([RE],RE1,E); addElement([],RE1,E)
+	),
+	length(RA,SizeRA),
+	(SizeRA > 0 -> addElement([RA],RS,L); addElement([],RS,L)
+	),!.
+
+%estadoDumy(L),iteradorEstadoAgente(L,EA),iteradorEstadoObjetos(L,EO),iteraAccionBuscarMover(EA,EO,R).
+iteraAccionBuscarMover([_|_],[],[]):-!.
+iteraAccionBuscarMover([R|S],[Y|W],L):-
+	brazosLibres(_,Z),
+	(Z > 0 ->
+		iteraAccionBuscarMover([R|S],W,RS),
+		[en,A,La] = [R|S],
+		[en,O,Lo] = Y,
+		(La \= Lo  ->  cuenta([mover,A,La,Lo],RS,Cuenta),
+				(Cuenta = 0 -> addElement([[mover,A,La,Lo]],RS,L);addElement([],RS,L))
+				;addElement([[buscar,O,Lo,A]],RS,L)
+		);
+		L = []
+		%VALIDAR SI ES NECESARIO
+		%[en,A,La] = [R|S],
+		%[en,_,Lo] = Y,
+		%cuenta([mover,A,La,Lo],RS,Cuenta),
+		%(Cuenta = 0 -> addElement([[mover,A,La,Lo]],RS,L);addElement([],RS,L))
+	),!.
+
+iteraAccionAgarrar([_|_],[],[]):-!.
+iteraAccionAgarrar([A|B],[H|T],L):-
+	brazosLibres(_,Z),
+	(Z > 0 ->
+		iteraAccionAgarrar([A|B],T,RS),
+		[en,X,Lx] = [A|B],
+		[buscado,O,X] = H,
+		addElement([[agarrar,O,Lx,X]],RS,L);
+		L = []
+	),!.
+	
+
+%iteraObjetoAgarrado(agua,[en,robot,estante1],[[en,agua,mesa1],[en,refresco,mesa2]],L).
+iteraObjetoAgarrado(_,[_|_],[],[]):-write("Entro"),!.
+iteraObjetoAgarrado(Objeto,[C|D],[E|F],L):-
+	[en,O,Lo] = E,
+	(O = Objeto -> 	[en,A,La] = [C|D],
+			(Lo = La -> L = [entregar,O,Lo,A];L = [mover,A,La,Lo]);
+			iteraObjetoAgarrado(Objeto,[C|D],F,L)
+	).
+	
+%iteraObjetosAgarrados([agua,refresco],[en,robot,estante1],[[en,agua,mesa1],[en,refresco,mesa2]],L).
+iteraObjetosAgarrados([],[_|_],[_|_],[]):-!.
+iteraObjetosAgarrados([H|T],[C|D],[E|F],L):-
+	iteraObjetosAgarrados(T,[C|D],[E|F],RS),
+	iteraObjetoAgarrado(H,[C|D],[E|F],RA),
+	addElement([RA],RS,L),!.
+
+%agregaObjetosAgarrados([[agarrado,agua,robot],[agarrado,refresco,robot],[en,robot,inicio]],L).
+agregaObjetosAgarrados([],[]):-!.
+agregaObjetosAgarrados([H|T],L):-
+	agregaObjetosAgarrados(T,RS),
+	([agarrado,O,_] = H ->	addElement([O],RS,L);addElement([],RS,L)
+	),!.
+	
+%estadoDumy(L),estadoObjetivo([agua=>mesa1,refresco=>mesa2],LO),encuentraAccionesAplicables(LO,L,S).
+encuentraAccionesAplicables([A|B],[R|S],L):-
+	iteradorEstadoAgente([R|S],EA),iteradorEstadoObjetos([R|S],EO),
+	encuentraAccionesBusqueda(EO,[R|S],EO1,EB),
+	iteraAccionBuscarMover(EA,EO1,L1),
+	iteraAccionAgarrar(EA,EB,L2),
+	addElement(L1,L2,L3),
+	agregaObjetosAgarrados([R|S],OA),
+	iteraObjetosAgarrados(OA,EA,[A|B],L4),
+	addElement(L3,L4,L),!.
+	
+nodo([_|_]).
+
+%estadoDumy(L),generaNodoPadreDummy(L,NodoPadreDummy).
+generaNodoPadreDummy(L,NodoPadreDummy):-
+	NodoPadreDummy = nodo([estado=>L,probabilidad=>96,recompenza=>300,costo=>15,heuristicaProbabilidad=>818,heuristicaRecompenza=>1310]).
+
+%estadoDumy(L),generaNodoPadreDummy(L,NodoPadreDummy),comparaMejorNodo(NodoPadreDummy,[buscar,refresco,estante1,robot],nodo([estado=>[],probabilidad=>0,recompenza=>0,costo=>0]),NewNodo),write(NewNodo).
+%estadoDumy(L),generaNodoPadreDummy(L,NodoPadreDummy),comparaMejorNodo(NodoPadreDummy,[buscar,refresco,estante1,robot],nodo([estado=>[[en,robot,estante1],[brazoLibre],[en,agua,estante1],[agarrado,refresco,robot],[buscado,refresco,robot],[buscado,refresco,robot]],probabilidad=>96.0,recompenza=>50,costo=>2,heuristicaProbabilidad=>818,heuristicaRecompenza=>1310]),NewNodo),write(NewNodo).
+comparaMejorNodo(NodoPadre,[AccionH|AccionT],NodoHijoMax,NewNodo):-
+	[NombreAccion|_] = [AccionH|AccionT],
+	(NombreAccion \= mover ->
+		[_,Objeto,_,_] = [AccionH|AccionT],
+		probabilidadDe(NombreAccion,Objeto,Probabilidad),
+		recompensaDe(NombreAccion,Objeto,Recompenza),
+		costoDe(NombreAccion,Objeto,Costo);
+		[_,_,Li,Lj] = [AccionH|AccionT],
+		%probabilidadDeIr(Li,Lj,Probabilidad),
+		Probabilidad = 0,
+		Recompenza = 0,
+		costoDeIr(Li,Lj,Costo)
+	),
+	nodo([NPH|NPT]) = NodoPadre,
+	nodo([NHMH|NHMT]) = NodoHijoMax,
+	searchValue(probabilidad,[NPH|NPT],ProbabilidadAcumulada),
+	searchValue(recompenza,[NPH|NPT],RecompenzaAcumulada),
+	searchValue(costo,[NPH|NPT],CostoAcumulado),
+	searchValue(heuristicaProbabilidad,[NPH|NPT],HeuristicaProbabilidad),
+	searchValue(heuristicaRecompenza,[NPH|NPT],HeuristicaRecompenza),
+	searchValue(probabilidad,[NHMH|NHMT],ProbabilidadMax),
+	searchValue(recompenza,[NHMH|NHMT],RecompenzaMax),
+	searchValue(costo,[NHMH|NHMT],CostoMax),
+	(ProbabilidadMax>0,RecompenzaMax>0,CostoMax>0 ->
+		ProbabilidadTotal is ProbabilidadAcumulada + Probabilidad * 100,
+		RecompenzaTotal is RecompenzaAcumulada + Recompenza,
+		ProbabilidadTotalMax is ProbabilidadAcumulada + ProbabilidadMax * 100,
+		RecompenzaTotalMax is RecompenzaAcumulada + RecompenzaMax,
+		calculaHeuristica(ProbabilidadTotal,HeuristicaProbabilidad,RecompenzaTotal,HeuristicaRecompenza,Heuristica),
+		calculaHeuristica(ProbabilidadTotalMax,HeuristicaProbabilidad,RecompenzaTotalMax,HeuristicaRecompenza,HeuristicaMax),
+		((Heuristica + Costo) < (HeuristicaMax + CostoMax)->
+			CostoTotal is CostoAcumulado + Costo,
+			searchValue(estado,[NPH|NPT],Estado),
+			getEfecto([AccionH|AccionT],EP,EN),
+			calculaNuevoEstadoAccion(EP,EN,Estado,NuevoEstado),
+			NewNodo = nodo([estado=>NuevoEstado,probabilidad=>ProbabilidadTotal,recompenza=>RecompenzaTotal,costo=>CostoTotal,heuristicaProbabilidad=>HeuristicaProbabilidad,heuristicaRecompenza=>HeuristicaRecompenza])
+			;
+			NewNodo = NodoHijoMax
+		);
+		searchValue(estado,[NPH|NPT],Estado),
+		getEfecto([AccionH|AccionT],EP,EN),
+		calculaNuevoEstadoAccion(EP,EN,Estado,NuevoEstado),
+		ProbIns is Probabilidad * 100,
+		NewNodo = nodo([estado=>NuevoEstado,probabilidad=>ProbIns,recompenza=>Recompenza,costo=>Costo,heuristicaProbabilidad=>HeuristicaProbabilidad,heuristicaRecompenza=>HeuristicaRecompenza])
+	),!.
+	
+
+%calculaHeuristica(96,818,50,1310,H).
+calculaHeuristica(ProbabilidadTotal,HeuristicaProbabilidad,RecompenzaTotal,HeuristicaRecompenza,Heuristica):-
+	Heuristica is sqrt((HeuristicaProbabilidad - ProbabilidadTotal)^2 + (HeuristicaRecompenza - RecompenzaTotal)^2).
+
+%buscaMejorExpancion(nodo([estado=>[],probabilidad=>0,recompenza=>0,costo=>0,heuristicaProbabilidad=>818,heuristicaRecompenza=>1310]),[[buscar,refresco,mesa1,x],[mover,robot,mesa1,mesa2]],N).
+%estadoInicial([agua=>mesa1,refresco=>mesa2],EI),estadoObjetivo([agua=>mesa1,refresco=>mesa2],LO),Nodo = nodo([estado=>EI,probabilidad=>0,recompenza=>0,costo=>0,heuristicaRecompenza=>1310,heuristicaProbabilidad=>818]),encuentraAccionesAplicables(LO,EI,AccionesAplicable),buscaMejorExpancion(Nodo,AccionesAplicable,NodoExpancion).
+%estadoInicial([hamburguesa=>mesa1,refresco=>mesa2],EI),estadoObjetivo([hamburguesa=>mesa1,refresco=>mesa2],LO),Nodo = nodo([estado=>EI,probabilidad=>0,recompenza=>0,costo=>0,heuristicaRecompenza=>1310,heuristicaProbabilidad=>818]),encuentraAccionesAplicables(LO,EI,AccionesAplicable),buscaMejorExpancion(Nodo,AccionesAplicable,NodoExpancion).
+%estadoInicial([agua=>mesa3,sandwich=>mesa1,hamburguesa=>mesa1,refresco=>mesa2],EI),estadoObjetivo([agua=>mesa3,sandwich=>mesa1,hamburguesa=>mesa1,refresco=>mesa2],LO),Nodo = nodo([estado=>EI,probabilidad=>0,recompenza=>0,costo=>0,heuristicaRecompenza=>1310,heuristicaProbabilidad=>818]),encuentraAccionesAplicables(LO,EI,AccionesAplicable),buscaMejorExpancion(Nodo,AccionesAplicable,NodoExpancion),write(NodoExpancion).
+%estadoInicial([agua=>mesa3,sandwich=>mesa1,refresco=>mesa2],EI),estadoObjetivo([agua=>mesa3,sandwich=>mesa1,refresco=>mesa2],LO),Nodo = nodo([estado=>EI,probabilidad=>0,recompenza=>0,costo=>0,heuristicaRecompenza=>1310,heuristicaProbabilidad=>818]),encuentraAccionesAplicables(LO,EI,AccionesAplicable),buscaMejorExpancion(Nodo,AccionesAplicable,NodoExpancion),write(NodoExpancion).
+buscaMejorExpancion(_,[],NodoExpancion):- NodoExpancion = nodo([estado=>[],probabilidad=>0,recompenza=>0,costo=>0]),!.
+buscaMejorExpancion(Nodo,[AccionesH|AccionesT],NodoExpancion):-
+	buscaMejorExpancion(Nodo,AccionesT,MinNodo),
+	comparaMejorNodo(Nodo,AccionesH,MinNodo,NodoExpancion),!.
+
+iteraEstadoObjetivos([_|_],[],CuentaTotal):-CuentaTotal = 0,!.	
+iteraEstadoObjetivos([H|T],[EoH|EoT],CuentaTotal):-
+	cuenta([H|T],[EoH|EoT],Cuenta),
+	(Cuenta>0 ->
+		CuentaTotal is Cuenta;
+		iteraEstadoObjetivos([H|T],EoT,CuentaParcial),
+		CuentaTotal = CuentaParcial
+	),!.
+	
+iteraEstadosObjetivos([],[_|_],CuentaTotal):-CuentaTotal = 0,!.	
+iteraEstadosObjetivos([ObH|ObT],[EoH|EoT],CuentaTotal):-
+	iteraEstadosObjetivos(ObT,[EoH|EoT],CuentaParcial),
+	iteraEstadoObjetivos(ObH,[EoH|EoT],CuentaObjetivo),
+	CuentaTotal is CuentaParcial + CuentaObjetivo,!.
+%estadoObjetivo([agua=>mesa2,refresco=>mesa1],LO),estadoDumy(L),validaSatisfacibilidad(LO,L).
+validaSatisfacibilidad([ObH|ObT],[EsH|EsT]):-
+	iteradorEstadoObjetos([EsH|EsT],EO),
+	iteraEstadosObjetivos([ObH|ObT],EO,Cuenta),
+	length([ObH|ObT],Size),
+	(Cuenta =  Size ->
+		true;
+		false
+	),!.
+
+%planning([agua=>mesa1,refresco=>mesa2],Plan).
+planeador(Nodo,[ObH|ObT],[ApH|ApT],Plan):-
+	%estadoInicial([H|T],E0),
+	%nodo([estado=>E0,probabilidad=>0,recompenza=>0,costo=>0,heuristicaRecompenza=>1310,heuristicaProbabilidad=>818]),
+	nodo([NodoH|NodoT]) = Nodo,
+	%write([NodoH|NodoT]),nl,
+	searchValue(estado,[NodoH|NodoT],Estado),
+	validaSatisfacibilidad([ObH|ObT],Estado),
+	write("Expando"),nl,
+	buscaMejorExpancion(Nodo,[ApH|ApT],NodoExpancion),
+	encuentraAccionesAplicables([ObH|ObT],Estado,AccionesAplicable),	
+	planeador(NodoExpancion,[ObH|ObT],AccionesAplicable,PlanInicial),
+	addElement([ApH|ApT],PlanInicial,Plan),!.
+	
+planeador(_,[_|_],[_|_],[]):-!.
+		
+	

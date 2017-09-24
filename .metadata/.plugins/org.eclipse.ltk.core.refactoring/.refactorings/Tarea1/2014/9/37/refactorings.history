@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;Ejercicio3.pl&apos; to &apos;src&apos;&#x0A;- Original project: &apos;Tarea1&apos;&#x0A;- Destination element: &apos;src&apos;&#x0A;- Original element: &apos;Ejercicio3.pl&apos;" description="Copy file" element1="src/Ejercicio3.pl" files="1" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1410660053661" target="/RepresentacionConocimiento/src" units="0" version="1.0"/>
+</session>

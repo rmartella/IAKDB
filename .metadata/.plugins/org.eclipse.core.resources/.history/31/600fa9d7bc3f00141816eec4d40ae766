@@ -1,0 +1,2 @@
+:-op(15,xfx,=>).
+class(name=>"Object",parent=>"Object",[]).

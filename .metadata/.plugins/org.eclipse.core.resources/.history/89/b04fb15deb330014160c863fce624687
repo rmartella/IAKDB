@@ -1,0 +1,5 @@
+%op(35,xfy,=>).
+asserta((a -> b)).
+op(500, xfx, '==>').
+%valor(Y, Y \=> X).
+%valor(Y, [A|B], X).

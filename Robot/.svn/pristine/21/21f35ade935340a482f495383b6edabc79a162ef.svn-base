@@ -1,0 +1,209 @@
+﻿:-op(15,xfx,=>).
+
+/**
+*
+* Proyecto 2
+*
+*/
+
+% Predicado auxiliar que a partir de una lista atributo-valor, cuyo formato es 
+%  [a1=>v1, a2=>v2, ..., aN=>vN ], obtenga el valor de un atributo 
+%  que se le pida
+
+valor(X,[X=>Y|_],Y):-!.
+valor(X,[_=>_|T],Y):-valor(X,T,Y).
+
+%brazosLibres(X,Y):-object(X,"Agente",Atrs,_),valor(brazosLibres,Atrs,Y).
+
+% Predicado auxiliar que a partir de una lista atributo-valor, cuyo formato es 
+%  [a1=>v1, a2=>v2, ..., aN=>vN ], obtenga el nombre de un atributo 
+%  que se le pida dado su valor
+name(X,[Y=>X|_],Y).
+name(X,[_=>_|T],Y):-valor(X,T,Y).
+
+%% Accion de moverse de la posicion i a la posicion j%%
+mover(LocationI,LocationJ):-
+object(robot,_,Atrs,Rels),
+valor(posicion,Atrs,Value),
+LocationI=Value,Value\=LocationJ,!,
+display("Posicion del Agente:"),
+posicionAgente(PA),
+display(PA),nl,
+display("Accion:mover("),
+display(LocationI),display(","),
+display(LocationJ),
+display(")"),nl,
+display("Brazos:"),display(Rels),nl,
+costoDeIr(LocationI,LocationJ,Costo),costoAgente(CA),
+Res is CA + Costo,
+display("Costo de la accion:"),display(Costo),nl,
+display("Costo Acumulado:"),display(CA),nl,
+modifyValueRelation(costo=>_,Res,robot,_),
+probabilidadDeIr(LocationI,LocationJ,X),random(Y),
+write("Probabilidad de Accion:"),tab(1),write(X),nl,
+write("Probabilidad de Realizar"),tab(1),write(Y),nl,
+recompensaAgente(RA),
+display("Recompensa Acumulada:"),display(RA),nl,nl,
+Y=<X,
+modifyValueRelation(posicion=>LocationI,LocationJ,robot,_),!.
+
+%% Accion de buscar un objeto en la posicion actual %%
+buscar(Object):-
+object(Object,_,_,Relaciones),
+valor(ubicacion,Relaciones,Value1),
+object(robot,_,Atributos,Rels),
+valor(posicion,Atributos,Value2),
+Value1=Value2,
+display("Posicion del Agente:"),
+posicionAgente(PA),
+display(PA),nl,
+display("Accion:buscar("),
+display(Object),
+display(")"),nl,
+display("Brazos:"),display(Rels),nl,
+costoDe(buscar,Object,Costo),costoAgente(CA),
+Res is CA + Costo,modifyValueRelation(costo=>_,Res,robot,_),
+display("Costo de la accion:"),display(Costo),nl,
+display("Costo Acumulado:"),display(CA),nl,
+probabilidadDe(buscar,Object,X),random(Y),
+write("Probabilidad de Accion:"),tab(1),write(X),nl,
+write("Probabilidad de Realizar"),tab(1),write(Y),nl,
+Y=<X,
+recompensaDe(buscar,Object,R),recompensaAgente(RA),
+RC is R +RA,modifyValueRelation(recompensa=>_,RC,robot,_),
+display("Recompensa de la accion:"),display(R),nl,
+display("Recompensa Acumulada:"),display(RC),nl,nl.
+
+%% Accion de agarrar el objeto en la posicion actual, se debio%%
+%% haber encontrado el objeto antes %%
+agarrar(Object):- 
+object(robot,"Agente",Atrs,Rels),
+valor(brazo1,Rels,W1), valor(brazo2,Rels,W2),
+display("Posicion del Agente:"),
+posicionAgente(PA),
+display(PA),nl,
+display("Accion:agarrar("),
+display(Object),
+display(")"),nl,
+display("Brazos:"),display(Rels),nl,
+valor(brazosLibres,Atrs,BL),BL>0,
+costoDe(agarrar,Object,Costo),costoAgente(CA),
+Res is CA + Costo,
+display("Costo de la accion:"),display(Costo),nl,
+display("Costo Acumulado:"),display(CA),nl,
+modifyValueRelation(costo=>_,Res,robot,_),
+probabilidadDe(agarrar,Object,X),random(Y),
+write("Probabilidad de Accion:"),tab(1),write(X),nl,
+write("Probabilidad de Realizar"),tab(1),write(Y),nl,
+Y=<X,
+( W1=""->modifyRelationWith(brazo1=>"",Object,robot,_) ; 
+  ( W2=""->modifyRelationWith(brazo2=>"",Object,robot,_) ) ),
+NBL is BL - 1,
+modifyValueRelation(brazosLibres=>_,NBL,robot,_),
+recompensaDe(agarrar,Object,R),recompensaAgente(RA),
+RC is R +RA,modifyValueRelation(recompensa=>_,RC,robot,_),
+display("Recompensa de la accion:"),display(R),nl,
+display("Recompensa Acumulada:"),display(RC),nl,nl.
+
+%%Acción de entregar %%
+entregar(Object):-
+object(robot,"Agente",Atrs,Y),
+valor(brazo1,Y,W1),valor(brazo2,Y,W2),
+display("Posicion del Agente:"),
+posicionAgente(PA),
+display(PA),nl,
+display("Accion:entregar("),
+display(Object),
+display(")"),nl,
+display("Brazos:"),display(Y),nl,
+costoDe(entregar,Object,Costo),costoAgente(CA),
+Res is CA + Costo,
+display("Costo de la accion:"),display(Costo),nl,
+display("Costo Acumulado:"),display(CA),nl,
+modifyValueRelation(costo=>_,Res,robot,_),
+probabilidadDe(entregar,Object,X),random(R),
+R=<X,
+write("Probabilidad de Accion:"),tab(1),write(X),nl,
+write("Probabilidad de Realizar"),tab(1),write(R),nl,
+( W1=Object->modifyRelationWith(brazo1=>W1,"",robot,_);
+ ( W2=Object->modifyRelationWith(brazo2=>W2,"",robot,_) ) ),
+valor(brazosLibres,Atrs,BL), BL<2,
+NBL is BL + 1,
+modifyValueRelation(brazosLibres=>_,NBL,robot,_),
+recompensaDe(entregar,Object,RO),recompensaAgente(RA),
+RC is RO +RA,modifyValueRelation(recompensa=>_,RC,robot,_),
+display("Recompensa de la accion:"),display(R),nl,
+display("Recompensa Acumulada:"),display(RC),nl,nl.
+
+%% Suma de costo de la ruta actual
+%costoRutaTotal(Object,CostoTotal):-posicionAgente(X),
+
+%% Metodos auxiliares %%
+valor(Object1,Object2,Value,V2):-object(Object1,_,X,_),valor(Object2,X,V1),valor(Value,V1,V2).
+
+%% Predicado que da la ubicacion de un alimento %%
+ubicacion(Alimento, Ubicacion):-object(Alimento,"Alimento",_,Y),valor(ubicacion,Y,Ubicacion).
+
+%% Predicado que da la posicion del agente %%
+posicionAgente(Posicion):-object(robot,"Agente",X,_),valor(posicion,X,Posicion).
+
+%% Predicado que da el costo de realizar una accion %% 
+%% de un alimento %%
+costoDe(Accion,Alimento,Costo):-object(Accion,"Accion",X,_),valor(Alimento,X,V1),valor(costo,V1,Costo).
+
+%% Predicado que da la probabilidad de realizar una accion %% 
+%% de un alimento %%
+probabilidadDe(Accion,Alimento,Probabilidad):-object(Accion,"Accion",X,_),valor(Alimento,X,V1),valor(probabilidad,V1,Probabilidad).
+
+%% Predicado que da la probabilidad de realizar una accion %% 
+%% de un alimento %%
+recompensaDe(Accion,Alimento,Recompensa):-object(Accion,"Accion",X,_),valor(Alimento,X,V1),valor(recompensa,V1,Recompensa).
+
+%% Predicado que da el costo de ir de una posicion a otra %% 
+costoDeIr(Posicion1,Posicion2,Costo):-object(Posicion1,"Localizacion",X,_),valor(Posicion2,X,V1),valor(costo,V1,Costo).
+
+%% Predicado que da la probabilidad de ir de una posicion a otra %%
+probabilidadDeIr(Posicion1,Posicion2,Probabilidad):-object(Posicion1,"Localizacion",X,_),valor(Posicion2,X,V1),valor(probabilidad,V1,Probabilidad).
+
+%% Predicado que me da el costo que lleva el robot %%
+costoAgente(Y):-object(robot,"Agente",X,_),valor(costo,X,Y).
+
+%% Predicado que me da la recompensa que lleva el robot %%
+recompensaAgente(Y):-object(robot,"Agente",X,_),valor(recompensa,X,Y).
+
+%% Predicado que da la recompensa total de un alimento %%
+recompensaTotal(Alimento,Recompensa):-recompensaDe(buscar,Alimento,V1),recompensaDe(agarrar,Alimento,V2),recompensaDe(entregar,Alimento,V3), Recompensa is V1+V2+V3.
+
+%% Predicado que da la recompensa total de un alimento %%
+probabilidadTotal(Alimento,Probabilidad):-probabilidadDe(buscar,Alimento,V1),probabilidadDe(agarrar,Alimento,V2),probabilidadDe(entregar,Alimento,V3), Probabilidad is V1*V2*V3.
+
+%%
+probabilidadTotal(Alimento,Ubicacion,Recompensa):-recompensaTotal(Alimento,Rec),probabilidadTotal(Alimento,Prob),ubicacion(Alimento,Pos),probabilidadDeIr(inicio,Pos,P1),probabilidadDeIr(Pos,Ubicacion,P2),Recompensa is Rec / 1-(Prob*P1*P2).
+
+%% Media ponderada
+probabilidadTotalPonderada(Alimento,Probabilidad):-probabilidadDe(buscar,Alimento,V1),probabilidadDe(agarrar,Alimento,V2),probabilidadDe(entregar,Alimento,V3), Probabilidad is V1+V2+V3.
+
+%% Media ponderada
+probabilidadTotalPonderada(Alimento,Ubicacion,Recompensa):-recompensaTotal(Alimento,Rec),probabilidadTotalPonderada(Alimento,Prob),ubicacion(Alimento,Pos),probabilidadDeIr(inicio,Pos,P1),probabilidadDeIr(Pos,Ubicacion,P2),Recompensa is Rec / (Prob+P1+P2).
+
+%%Predicado de ejecucion de acciones
+ejecutar(T,X):-X=..T,X.
+		  
+ejecutarPlan([T],X):-ejecutar(T,X).
+
+ejecutarPlan([H|T],[X,Y]):-ejecutar(H,X),ejecutarPlan(T,Y),!.
+
+%% Accion de ordenar 
+ordenar(Y,_):-plan(Y).
+
+plan(_).
+
+%% Estado Actual del robot %%
+estadoInicial(Objects,EdoInicial):-posicionAgente(X),ubicaciones(Objects,UB),concatenar([[en,robot,X],[brazosLibres,2]],UB,EdoInicial).
+
+ubicaciones([],[]).
+ubicaciones([A=>_|T],L):-ubicacion(A,UB),ubicaciones(T,L2),concatenar([[en,A,UB]],L2,L).
+
+%Estado Objetivo
+estadoObjetivo([],[]).
+estadoObjetivo([X=>Y|T],EdoObjetivo):-estadoObjetivo(T,L2),concatenar([[en,X,Y]],L2,EdoObjetivo).

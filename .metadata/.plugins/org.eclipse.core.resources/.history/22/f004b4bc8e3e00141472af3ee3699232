@@ -1,0 +1,16 @@
+%Propiedades
+
+
+%Relaciones
+
+%Clases
+%lista_clases([object class object, clase1 class object, clase2 class clase1]).
+:-op(15,xfx,class).
+%busca_clase(Clase,[H|T]):-!.
+busca_clase(Clase,[H|T],Padre):-
+ class(Padre,Clase) = H,!;busca_clase(Clase,T).
+	
+			
+consulta_extension(Clase,[]):-!.
+consulta_extension(Clase,[H|T]):-
+	write(H),nl,consulta_extension(Clase,T).

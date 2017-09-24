@@ -1,0 +1,15 @@
+:-op(15,xfx,=>).
+:-op(15,xfx,extend).
+:-op(15,xfx,getClassProperty).
+class([name=>"Object",parent=>"Object",attributes=>[]]).
+class([name=>"Class1",parent=>"Object",attributes=>[attr1=>value1]]).
+class([name=>"Class2",parent=>"Object",attributes=>[attr1=>value1,attr2=>value2]]).
+class([name=>"Class3",parent=>"Class2",attributes=>[attr3=>value4]]).
+%[class(name=>"Object",parent=>"Object",attributes=>[]),class(name=>"Class1",parent=>"Object",attributes=>[attr1=>value1]),class(name=>"Class3",parent=>"Class2",attributes=>[attr3=>value4])].
+searchValue(Property,[],Value):-write(Property),nl!.
+searchValue(Property,[H|T],Value):-
+	=>(Property,Value) =  H, searchValue(Property,[T],Value).	
+findProperty(Class,Property,Value):-
+	Class = getClassProperty(L), searchValue(Property,L,Value).
+%getExtends(Class,[H|T],L):-
+	%class(

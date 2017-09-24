@@ -1,0 +1,8 @@
+%Propiedades
+
+
+%Relaciones
+
+%Clases
+class(Nombre,Padre).
+

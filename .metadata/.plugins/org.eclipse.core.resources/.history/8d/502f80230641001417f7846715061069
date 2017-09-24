@@ -1,0 +1,119 @@
+:-op(15,xfx,=>).
+%Rutinas para abrir archivos
+open_kb(Route,KB):-
+	open(Route,read,Stream),
+	readclauses(Stream,X),
+	close(Stream),
+	atom_to_term(X,KB).
+readclauses(InStream,W) :-
+        get0(InStream,Char),
+        checkCharAndReadRest(Char,Chars,InStream),
+	atom_chars(W,Chars).
+checkCharAndReadRest(-1,[],_) :- !.  % End of Stream	
+checkCharAndReadRest(end_of_file,[],_) :- !.
+
+checkCharAndReadRest(Char,[Char|Chars],InStream) :-
+        get0(InStream,NextChar),
+        checkCharAndReadRest(NextChar,Chars,InStream).
+
+atom_to_term(ATOM, TERM) :-
+	atom(ATOM),
+	atom_to_chars(ATOM,STR),
+	atom_to_chars('.',PTO),
+	append(STR,PTO,STR_PTO),
+	read_from_chars(STR_PTO,TERM).
+
+lista(Lista):-
+	open_kb('/opt/codigo/prolog/RepresentacionConocimiento/src/kb.txt',KB),Lista=KB.
+
+findListTokens(ListaClases,ListaObjectos):-
+	lista(Lista),
+	searchValue("ClassList",Lista,ListaClases),
+	searchValue("ObjectList",Lista,ListaObjectos).
+
+%Predicados
+add([],E,E):-!.
+add([A|B],E,[A|D]):-
+	add(B,E,D).
+
+%searchValue(name,[name=>class1,parent=>object,attributes=>[attr1=>value1]], Value).
+%Predicado que busca el valor de la propiedad
+searchValue(Property,[H|T],Value):-
+	=>(Property,Value) = H,!;searchValue(Property,T,Value).
+%Predicado que encuentra el valor de la propiedad de una clase
+%findNameClass(class("Class1","Class2",[attribute1=>value1]),Value).
+findNameClass(Class,Value):-
+	class(Value,_,_) = Class.
+%findParentClass(class("Class1","Class2",[attribute1=>value1]),Value).
+findParentClass(Class,Value):-
+	class(_,Value,_) = Class.
+%findAttributesClass(class("Class1","Class2",[attribute1=>value1]),Value).
+findAttributesClass(Class,Value):-
+	class(_,_,Value) = Class.
+findNameObject(Object,Value):-
+	object(Value,_,_) = Object.
+findClassObject(Object,Value):-
+	object(_,Value,_) = Object.
+findAttributesObject(Object,Value):-
+	object(_,_,Value) = Object.
+%Predicado que busca una clase por el valor de la propiedad
+%findClassByName("Class1",[class("Object","Object",[]),class("Class1","Object",[attr1=>value1]),class("Class2","Object",[attr1=>value1,attr2=>value2]),class("Class3","Class2",[attr1=>value5,attr3=>value4])],Class).
+findClassByName(Value,[H|T],Class):-
+	findNameClass(H,Value),Class = H,!;findClassByName(Value,T,Class).
+%findObjectByName("Object1",[object("Object1","Class1",[attr1=>value5,attr3=>value4]),object("Object2","Class2",[attr1=>value5,attr3=>value4])],Object).
+findObjectByName(Value,[H|T],Object):-
+	findNameObject(H,Value),Object = H,!;findObjectByName(Value,T,Object).
+%Predicado que obtiene una lista de nombres de clases de los cuales hereda una clase
+%getExtends("Class1",[class("Object","Object",[]),class("Class1","Object",[attr1=>value1]),class("Class2","Object",[attr1=>value1,attr2=>value2]),class("Class3","Class2",[attr1=>value5,attr3=>value4])],L).
+getExtends(ClassName,[H|T],L):-
+	findClassByName(ClassName,[H|T],Class),
+	findParentClass(Class,ParentName),
+	ParentName \= ClassName,!,
+	getExtends(ParentName,[H|T],S),
+	add([ParentName],S,L).
+getExtends(ClassName,[H|T],L):-
+	findClassByName(ClassName,[H|T],_),add([],[],L).
+%Predicado que obtiene una lista de clases a las que pertenece el objeto
+%getExtendsOfObject("Object2",[object([name=>"Object1",class=>"Class1",attr1=>value2]),object([name=>"Object2",class=>"Class2",attr1=>value2])],[class([name=>"Object",parent=>"Object",attributes=>[]]),class([name=>"Class1",parent=>"Object",attributes=>[attr1=>value1]]),class([name=>"Class2",parent=>"Object",attributes=>[attr1=>value1,attr2=>value2]]),class([name=>"Class3",parent=>"Class2",attributes=>[attr1=>value5,attr3=>value4]])],L).
+getExtendsOfObject(ObjectName,L):-
+	findListTokens(ClassList,ClassObject),
+	getExtendsOfObject(ObjectName,ClassObject,ClassList,L).
+getExtendsOfObject(ObjectName,[H|T],[Y|Z],L):-
+	findObjectByName(ObjectName,[H|T],Object),
+	findClassObject(Object,ClassName),
+	getExtends(ClassName,[Y|Z],L).
+
+getAttributesOfClass(ClassName,L):-
+	findListTokens(ClassList,_),
+	getAttributesOfClass(ClassName,ClassList,L).
+getAttributesOfClass(ClassName,[H|T],L):-
+	findClassByName(ClassName,[H|T],Class),
+	findParentClass(Class,ParentName),
+	findAttributesClass(Class,Attributes),
+	ParentName \= ClassName,!,
+	getAttributesOfClass(ParentName,[H|T],S),
+	add(Attributes,S,L).
+getAttributesOfClass(_,[_|_],L):-add([],[],L).
+
+getAttributesOfObject(ObjectName,L):-
+	findListTokens(ClassList,ClassObject),
+	getAttributesOfObject(ObjectName,ClassObject,ClassList,L).
+getAttributesOfObject(ObjectName,[H|T],[Y|Z],L):-
+	findObjectByName(ObjectName,[H|T],Object),
+	findClassObject(Object,ClassName),
+	getAttributesOfClass(ClassName,[Y|Z],S),
+	findAttributesObject(Object,Attributes),
+	add(Attributes,S,L).
+
+	
+addIfExtendsObject(Class,[H|T],[Y|Z],L):-
+	
+getExtendsBD(ClassName,[H|T],[Y|Z],L):-
+	findClassByName(ClassName,[H|T],Class),getExtends().
+	
+	
+	
+	
+	
+	
+	

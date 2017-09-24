@@ -1,0 +1,5 @@
+
+%dynamic (=>)/2.
+%op(100,xfx,'=>').
+is_in(apple, room(kitchen)).
+room(kitchen).

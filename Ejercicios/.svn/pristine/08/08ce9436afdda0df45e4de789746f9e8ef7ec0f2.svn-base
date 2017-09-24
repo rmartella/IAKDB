@@ -1,0 +1,1 @@
+saluda:-write('Hola mundo').

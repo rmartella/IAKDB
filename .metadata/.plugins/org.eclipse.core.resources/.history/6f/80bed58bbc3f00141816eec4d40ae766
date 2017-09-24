@@ -1,0 +1,46 @@
+%Propiedades
+
+
+%Relaciones
+
+%Clases
+%lista_clases([object class object, clase1 class object, clase2 class clase1]).
+:-op(15,xfx,extend).
+:-op(15,xfx,=>).
+
+add([],E,E):-!.
+add([A|B],E,[A|D]):-
+	add(B,E,D).
+
+%getExtend(Clase,[H|T],Padre):-
+% 	extends(Padre,Clase) = H,!;getExtend(Clase,T,Padre).
+getExtend(Class,[H|T],Parent):-
+ 	extend(Class,Parent) = H,!;getExtend(Class,T,Parent).
+ 	
+%consultaExtension(object,[object extends object, object extends clase1, clase1 extends clase2],L).
+%consultaExtension(clase1,[object extends object, object extends clase1, clase1 extends clase2],L).
+%consultaExtension(clase2,[object extends object, object extends clase1, clase1 extends clase2],L).
+[object extend object, object extend clase1, clase1 extend clase2].
+%consultaExtension(object,[object extends object, object extends clase1, clase1 extends clase2],L).
+%consultaExtension(clase1,[object extends object, object extends clase1, clase1 extends clase2],L).
+%consultaExtension(clase2,[object extends object, object extends clase1, clase1 extends clase2],L).
+
+%listExtends(Clase,[H|T],L):-
+%	getExtend(Clase,[H|T],Padre),
+%	Padre \= Clase,!,
+%	listExtends(Padre,[H|T],S),
+%	add([Padre],S,L).
+%listExtends(Clase,[H|T],L):-
+%	getExtend(Clase,[H|T],Padre),add([],[],L).
+	
+%Valores de Atributos de objeto
+[atributo1=>rojo,atributo2=>redonda,atributo3=>blando].
+%Atributos
+[atributo1,atributo2,atributo3].
+%
+class(Name,Parent,[]).
+[class("Object","Object",[]),class("Clase1","Object",[atributo1=>valor1,atributo2=>valor2]),class("Clase2","Object",[atributo1=>valor1,atributo2=>valor2])].
+
+listExtends(Clase,[H|T],L):-
+	getExtend(Clase,[H|T],Padre).
+	

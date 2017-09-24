@@ -1,0 +1,23 @@
+
+%dynamic (=>)/2.
+%op(100,xfx,'=>').
+%room(kitchen).
+%is_in(apple, room(kitchen)).
+%dynamic (is_in)/2.
+
+%op(15,yfx,=>).
+%valor(forma, [ color=>azul , forma=>esferica , peso=>ligero , material=>plastico] , X).
+dynamic (=>)/2.
+=>(X,Y):-
+	=>(X,Y).
+%:-=>(X,Y,Z),write(X),tab(2),write(Y),nl.
+=>(X,Y,Z):-
+	Z = Y, write(Y),nl.
+%obtenValor(X,Y,Z):-
+%	X=>Y,write(X),tab(2),write(Y),tab(2),write(Z),tab(2),nl.
+	
+valor(Atributo,[], X):-!.
+valor(Atributo,[H|T],X):-
+	X = =>(Atributo,Y),!.
+valor(Atributo,[H|T],X):-
+	valor(Atributo,T,X).	

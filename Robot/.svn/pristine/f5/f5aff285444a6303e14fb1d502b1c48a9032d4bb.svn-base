@@ -1,0 +1,35 @@
+:-consult("BaseConocimiento.pl").
+:-consult("Planning.pl").
+:-consult("Executing.pl").
+:-loadBD.
+%planning([agua=>mesa1,refresco=>mesa2,sandwich=>mesa3],200,TiempoPlaneacion,Plan).
+%Pruebas
+
+%Doble Movimientos
+%planning([refresco=>mesa2,sandwich=>mesa3,cafe=>mesa1,hamburguesa=>mesa1],60,TiempoPlaneacion,Plan),write(Plan).
+
+%Dobles Movimientos
+%planning([refresco=>mesa2,sandwich=>mesa3,agua=>mesa1,hamburguesa=>mesa1],60,TiempoPlaneacion,Plan),write(Plan).
+
+%Comportamiento muy extraño no logra el objetivo completamente.
+%Se corrigio corrigiendo la unificacion de objetivos con heuristicas iguales.
+%planning([refresco=>mesa2,sandwich=>mesa1,agua=>mesa1,hamburguesa=>mesa1],60,TiempoPlaneacion,Plan),write(Plan).
+
+%Optimo
+%planning([refresco=>mesa1,agua=>mesa2,hamburguesa=>mesa2],60,TiempoPlaneacion,Plan),write(Plan).
+planning([H|T],Tiempo,TiempoPlaneacion,Plan):-
+	get_time(TimeInicio),
+	estadoInicial([H|T],Tiempo,EI),
+	estadoObjetivo([H|T],EF),
+	obtenRecompenzaObjetivo([H|T],RecompenzaObjetivo),
+	obtenProbabilidadObjetivo([H|T],ProbabilidadObjetivo),
+	Nodo = nodo([estado=>EI,probabilidad=>100,probabilidadH=>100,recompenza=>0,recompenzaH=>0,costo=>0,heuristicaRecompenza=>RecompenzaObjetivo,heuristicaProbabilidad=>ProbabilidadObjetivo]),
+	planeador(Nodo,EF,Plan),
+	get_time(TimeFin),
+	TiempoPlaneacion is Tiempo - (TimeFin - TimeInicio),!.
+	
+	
+	
+	
+	
+	

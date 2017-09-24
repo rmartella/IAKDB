@@ -1,0 +1,8 @@
+[
+	predicado1(a,b,c),
+	predicado2(d,e,f),
+	predicado3(X,[g,h,i],j(k,l)),
+	predicado4('m n o',[],_),
+	predicado5([r=>s,t=>u],v(w(x)),y),
+	predicado6(z,z,z)
+]

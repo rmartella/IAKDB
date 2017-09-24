@@ -1,0 +1,9 @@
+%Propiedades
+
+
+%Relaciones
+
+%Clases
+class(Nombre,Padre).
+:-op(15,xfx,class).
+lista_clases([]).

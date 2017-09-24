@@ -1,0 +1,92 @@
+﻿/**
+*
+* Proyecto 2
+*
+*/
+
+% Predicado auxiliar que a partir de una lista atributo-valor, cuyo formato es 
+%  [a1=>v1, a2=>v2, ..., aN=>vN ], obtenga el valor de un atributo 
+%  que se le pida
+
+:-op(15,xfx,=>).
+
+valor(X,[X=>Y|_],Y):-!.
+valor(X,[_=>_|T],Y):-valor(X,T,Y).
+
+% Predicado auxiliar que a partir de una lista atributo-valor, cuyo formato es 
+%  [a1=>v1, a2=>v2, ..., aN=>vN ], obtenga el nombre de un atributo 
+%  que se le pida dado su valor
+name(X,[Y=>X|_],Y).
+name(X,[_=>_|T],Y):-valor(X,T,Y).
+
+%% Accion de moverse de la posicion i a la posicion j%%
+mover(LocationI,LocationJ):-object(robot,_,Atrs,_),valor(posicion,Atrs,Value),LocationI=Value,Value\=LocationJ,!,costoDeIr(LocationI,LocationJ,Costo),costoAgente(CA),Res is CA + Costo,modifyValueRelation(costo=>_,Res,robot,_),probabilidadDeIr(LocationI,LocationJ,X),random(Y),Y=<X,modifyValueRelation(posicion=>LocationI,LocationJ,robot,_),!.
+
+%% Accion de buscar un objeto en la posicion actual %%
+buscar(Object):-object(Object,_,_,Relaciones),valor(ubicacion,Relaciones,Value1),object(robot,_,Atributos,_),valor(posicion,Atributos,Value2),Value1=Value2,costoDe(buscar,Object,Costo),costoAgente(CA),Res is CA + Costo,modifyValueRelation(costo=>_,Res,robot,_),
+probabilidadDe(buscar,Object,Prob),random(Rand),Prob=<Rand,!.
+
+%% Accion de agarrar el objeto en la posicion actual, se debio%%
+%% haber encontrado el objeto antes %%
+agarrar(Object):- 
+object(robot,"Agente",_,Rels),
+valor(brazo1,Rels,W1), valor(brazo2,Rels,W2),
+probabilidadDe(agarrar,Object,X),random(Y),Y=<X,
+( W1=""->modifyRelationWith(brazo1=>"",Object,robot,_) ; 
+  ( W2=""->modifyRelationWith(brazo2=>"",Object,robot,_) ) ).
+
+%% Metodos auxiliares %%
+valor(Object1,Object2,Value,V2):-object(Object1,_,X,_),valor(Object2,X,V1),valor(Value,V1,V2).
+
+%% Predicado que da la ubicacion de un alimento %%
+ubicacion(Alimento, Ubicacion):-object(Alimento,"Alimento",_,Y),valor(ubicacion,Y,Ubicacion).
+
+%% Predicado que da la posicion del agente %%
+posicionAgente(Posicion):-object(robot,"Agente",X,_),valor(posicion,X,Posicion).
+
+%% Predicado que da el costo de realizar una accion %% 
+%% de un alimento %%
+costoDe(Accion,Alimento,Costo):-object(Accion,"Accion",X,_),valor(Alimento,X,V1),valor(costo,V1,Costo).
+
+%% Predicado que da la probabilidad de realizar una accion %% 
+%% de un alimento %%
+probabilidadDe(Accion,Alimento,Probabilidad):-object(Accion,"Accion",X,_),valor(Alimento,X,V1),valor(probabilidad,V1,Probabilidad).
+
+%% Predicado que da la probabilidad de realizar una accion %% 
+%% de un alimento %%
+recompensaDe(Accion,Alimento,Recompensa):-object(Accion,"Accion",X,_),valor(Alimento,X,V1),valor(recompensa,V1,Recompensa).
+
+%% Predicado que da el costo de ir de una posicion a otra %% 
+costoDeIr(Posicion1,Posicion2,Costo):-object(Posicion1,"Localizacion",X,_),valor(Posicion2,X,V1),valor(costo,V1,Costo).
+
+%% Predicado que da la probabilidad de ir de una posicion a otra %%
+probabilidadDeIr(Posicion1,Posicion2,Probabilidad):-object(Posicion1,"Localizacion",X,_),valor(Posicion2,X,V1),valor(probabilidad,V1,Probabilidad).
+
+%% Predicado que me da el costo que lleva el robot %%
+costoAgente(Y):-object(robot,"Agente",X,_),valor(costo,X,Y).
+
+%% Predicado que da la recompensa total de un alimento %%
+recompensaTotal(Alimento,Recompensa):-recompensaDe(buscar,Alimento,V1),recompensaDe(agarrar,Alimento,V2),recompensaDe(entregar,Alimento,V3), Recompensa is V1+V2+V3.
+
+%% Predicado que da la recompensa total de un alimento %%
+probabilidadTotal(Alimento,Probabilidad):-probabilidadDe(buscar,Alimento,V1),probabilidadDe(agarrar,Alimento,V2),probabilidadDe(entregar,Alimento,V3), Probabilidad is V1*V2*V3.
+
+%%
+probabilidadTotal(Alimento,Ubicacion,Recompensa):-recompensaTotal(Alimento,Rec),probabilidadTotal(Alimento,Prob),ubicacion(Alimento,Pos),probabilidadDeIr(inicio,Pos,P1),probabilidadDeIr(Pos,Ubicacion,P2),Recompensa is Rec / 1-(Prob*P1*P2).
+
+%% Media ponderada
+probabilidadTotalPonderada(Alimento,Probabilidad):-probabilidadDe(buscar,Alimento,V1),probabilidadDe(agarrar,Alimento,V2),probabilidadDe(entregar,Alimento,V3), Probabilidad is V1+V2+V3.
+
+%% Media ponderada
+probabilidadTotalPonderada(Alimento,Ubicacion,Recompensa):-recompensaTotal(Alimento,Rec),probabilidadTotalPonderada(Alimento,Prob),ubicacion(Alimento,Pos),probabilidadDeIr(inicio,Pos,P1),probabilidadDeIr(Pos,Ubicacion,P2),Recompensa is Rec / (Prob+P1+P2).
+
+%%Predicado de ejecucion de acciones
+ejecutar(T,X):-X=..T,X.
+
+ejecutarPlan([T],X):-ejecutar(T,X).
+ejecutarPlan([H|T],[X,Y]):-ejecutar(H,X),ejecutarPlan(T,Y),!.
+
+%% Accion de ordenar 
+ordenar(Y,_):-plan(Y).
+
+plan(_).

@@ -1,0 +1,16 @@
+
+%dynamic (=>)/2.
+%op(100,xfx,'=>').
+%room(kitchen).
+%is_in(apple, room(kitchen)).
+%dynamic (is_in)/2.
+
+%op(15,xfx,'=>').
+dynamic (=>)/2.
+=>(X,Y):-
+	X = Y.
+valor(X,[]):-!.
+valor(X,[X|T]):-
+	X,!.
+valor(X,[H|T]):-
+	valor(X,T).	

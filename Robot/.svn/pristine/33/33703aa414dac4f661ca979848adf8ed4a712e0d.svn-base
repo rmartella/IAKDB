@@ -1,0 +1,21 @@
+:-consult("BaseConocimiento.pl").
+:-consult("Planning.pl").
+:-consult("Executing.pl").
+:-loadBD.
+%planning([agua=>mesa1,refresco=>mesa2],Plan).
+%planning([agua=>mesa1,refresco=>mesa2,sandwich=>mesa3],Plan).
+planning([H|T],Plan):-
+	estadoInicial([H|T],EI),
+	estadoObjetivo([H|T],EF),
+	obtenRecompenzaObjetivo([H|T],RecompenzaObjetivo),
+	obtenProbabilidadObjetivo([H|T],ProbabilidadObjetivo),
+	HeuristicaRecompenza is RecompenzaObjetivo, HeuristicaProbabilidad is ProbabilidadObjetivo,
+	encuentraAccionesAplicables(EF,EI,AEI),
+	Nodo = nodo([estado=>EI,probabilidad=>1,recompenza=>0,costo=>0,heuristicaRecompenza=>HeuristicaRecompenza,heuristicaProbabilidad=>HeuristicaProbabilidad]),
+	planeador(Nodo,EF,AEI,Plan),!.
+	
+	
+	
+	
+	
+	

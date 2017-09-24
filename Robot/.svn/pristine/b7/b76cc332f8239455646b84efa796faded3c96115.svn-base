@@ -1,0 +1,20 @@
+:-consult("BaseConocimiento.pl").
+:-loadBD.
+
+busca(X):-
+	write(X).
+
+evaluar(X):-
+	atom_concat('busca','(',C1),
+	atom_concat(C1,X,C2),
+	atom_concat(C2,')',C3),
+	once(C3).	
+
+buscaTablasMovimiento(X,Y,Z,W):-
+	getAttributesBD(Y,object,L),
+	(X = 'C' -> Pref = 'costo_' ; X = 'P' -> Pref = 'proba_' ; !),
+	atom_concat(Pref,Y,C1),atom_concat(C1,'_',C2),atom_concat(C2,Z,C3),
+	searchValue(C3,L,W),!.
+	
+	
+	
