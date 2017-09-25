@@ -1,4 +1,0 @@
-op(35,xfy,=>).
-
-valor(Y, Y => X).
-valor(Y, [A|B], X).

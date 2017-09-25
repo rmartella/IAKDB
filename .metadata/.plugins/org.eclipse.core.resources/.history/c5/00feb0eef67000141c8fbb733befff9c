@@ -1,6 +1,0 @@
-:-consult("BaseConocimiento.pl").
-:-consult("Executing.pl").
-:-loadBD.
-	
-	
-	

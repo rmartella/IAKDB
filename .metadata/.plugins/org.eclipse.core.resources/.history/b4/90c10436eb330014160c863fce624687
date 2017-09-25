@@ -1,5 +1,0 @@
-dynamic (=>)/2.
-%op(35,xfy,=>).
-op(500, xfx, ).
-%valor(Y, Y \=> X).
-%valor(Y, [A|B], X).

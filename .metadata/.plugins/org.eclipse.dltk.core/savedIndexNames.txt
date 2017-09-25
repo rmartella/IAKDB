@@ -1,4 +1,0 @@
-/opt/codigo/prolog/.metadata/.plugins/org.eclipse.dltk.core/968845105.index
-/opt/codigo/prolog/.metadata/.plugins/org.eclipse.dltk.core/2565910717.index
-/opt/codigo/prolog/.metadata/.plugins/org.eclipse.dltk.core/1937765786.index
-/opt/codigo/prolog/.metadata/.plugins/org.eclipse.dltk.core/902215959.index
